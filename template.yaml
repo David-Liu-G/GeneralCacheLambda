@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  GeneralCacheLambda
+
+Globals:
+  Function:
+    CodeUri: GeneralCache
+    Runtime: java8
+    MemorySize: 512
+    Timeout: 300
+
+Resources:
+  ExampleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.App::handleRequest
