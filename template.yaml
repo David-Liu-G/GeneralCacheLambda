@@ -11,7 +11,25 @@ Globals:
     Timeout: 300
 
 Resources:
-  ExampleFunction:
+  CustomerOffer:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        -
+          AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TimeToLiveSpecification:
+        AttributeName: timeToLive
+        Enabled: true
+
+  RedriverHandler:
     Type: AWS::Serverless::Function
     Properties:
       Role:
@@ -21,7 +39,24 @@ Resources:
           - Ref: LambdaSecurityGroup
         SubnetIds:
           - Ref: MySubnet
-      Handler: helloworld.Handler::handleRequest
+      Handler: handler.Handler::handleRequest
+
+  GenerateRecordHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role:
+        Fn::GetAtt: [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - Ref: LambdaSecurityGroup
+        SubnetIds:
+          - Ref: MySubnet
+      Handler: handler.GenerateRecordHandler::handleRequest
+      Environment:
+        Variables:
+          REGION: "us-west-2"
+          TableName:
+            Ref: CustomerOffer
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
