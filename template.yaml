@@ -8,9 +8,29 @@ Globals:
     CodeUri: GeneralCache
     Runtime: java8
     MemorySize: 512
-    Timeout: 300
+    Timeout: 30
 
 Resources:
+  EndpointDynamoDB:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-west-2.dynamodb
+      RouteTableIds:
+        - Ref: MyVPCRouteTable
+      VpcId:
+        Ref: MyVPC
+
+  DataTableStream:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      MaximumRetryAttempts: 3
+      Enabled: true
+      EventSourceArn:
+        Fn::GetAtt: [ CustomerOffer , StreamArn ]
+      FunctionName:
+        Fn::GetAtt: [ RedriverHandler , Arn ]
+      StartingPosition: TRIM_HORIZON
+
   CustomerOffer:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -78,6 +98,20 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
+
+  MyVPCRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: MyVPC
+
+  MyVPCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: MyVPCRouteTable
+      SubnetId:
+        Ref: MySubnet
 
   MySubnet:
     Type: AWS::EC2::Subnet
